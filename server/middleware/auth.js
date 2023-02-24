@@ -11,9 +11,9 @@ const Auth = async (req, res, next) => {
     //retrive the user details of the logged in user
     const decodedToken = await jwt.verify(token, process.env.SECRET_KEY);
 
-    const user = await User.findOne({ username: decodedToken.username });
-    res.user = user;
- 
+    let user = await User.findOne({ username: decodedToken.username });
+    req.user = user;
+
     next();
   } catch (error) {
     console.log(error);
@@ -21,4 +21,4 @@ const Auth = async (req, res, next) => {
   }
 };
 
-module.exports = Auth 
+module.exports = Auth;

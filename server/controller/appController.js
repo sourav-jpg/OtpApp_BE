@@ -89,22 +89,21 @@ const getUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-  
+    //   console.log("hi");
+    //   console.log(req.user);
     let { email, firstName, lastName, mobile, address } = req.body;
     let data = await User.findOne({ _id: req.user._id});
-
     if (data) {
       const updatedUser = await User.updateOne(
         { _id: req.user._id }, 
         {
             $set : {email, firstName, lastName, mobile, address}
         }  
-        
         );
       res.json({
         message: "User updated successfully",
         error: false,
-        data: updatedUser,
+        data: {email, firstName, lastName, mobile, address},
       });
     }
   } catch (error) {
