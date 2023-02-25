@@ -1,20 +1,19 @@
 const User = require("../model/UserSchema");
 const md5 = require("md5");
 const jwt = require("jsonwebtoken");
- 
+const otpGenarator = require("otp-generator");
 
-const verify = async(req,res,next) =>{
+const verify = async (req, res, next) => {
   try {
-    const {username} = req.method == "GET" ? req.query : req.body;
+    const { username } = req.method == "GET" ? req.query : req.body;
     //check the user existance
-    let exist = await User.findOne({username});
-    if(!exist) return res.status(404).send({error:"Can't find User!"})
+    let exist = await User.findOne({ username });
+    if (!exist) return res.status(404).send({ error: "Can't find User!" });
     next();
-    
   } catch (error) {
-    res.status(404).send({error:"Authentication error"})
+    res.status(404).send({ error: "Authentication error" });
   }
-}
+};
 
 const register = async (req, res, next) => {
   let { email, username, password } = req.body;
@@ -106,18 +105,18 @@ const updateUser = async (req, res, next) => {
     //   console.log("hi");
     //   console.log(req.user);
     let { email, firstName, lastName, mobile, address } = req.body;
-    let data = await User.findOne({ _id: req.user._id});
+    let data = await User.findOne({ _id: req.user._id });
     if (data) {
       const updatedUser = await User.updateOne(
-        { _id: req.user._id }, 
+        { _id: req.user._id },
         {
-            $set : {email, firstName, lastName, mobile, address}
-        }  
-        );
+          $set: { email, firstName, lastName, mobile, address },
+        }
+      );
       res.json({
         message: "User updated successfully",
         error: false,
-        data: {email, firstName, lastName, mobile, address},
+        data: { email, firstName, lastName, mobile, address },
       });
     }
   } catch (error) {
@@ -126,24 +125,59 @@ const updateUser = async (req, res, next) => {
   }
 };
 
-const generateOTP = async () => {
+//install npm i otp-generator
+const generateOTP = async (req, res, next) => {
   try {
-  } catch (error) {}
+    // now i want to create here the app locals variables so i can access
+    //this otp variable inside verifyOtp controller
+    req.app.locals.OTP = await otpGenarator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+    res.status(201).send({ code: req.app.locals.OTP });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
-const verifyOTP = async () => {
+const verifyOTP = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { code } = req.query;
+    if (parseInt(req.app.locals.OTP) === parseInt(code)) {
+      req.app.locals.OTP = null; //reset otp value
+      req.app.locals.resetSession = true; //start session for reset password
+      return res.status(201).send({ message: "Verify Successfully!" });
+    }
+    return res.status(400).send({ error: "Invalid OTP" });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
-const createResetSession = async () => {
+//successfully redirect user when OTP is valid
+const createResetSession = async (req, res, next) => {
   try {
-  } catch (error) {}
+    if (req.app.locals.resetSession) {
+      req.app.locals.resetSession = false; //allow access to this route only once
+      return res.status(201).send({ message: "access granted!" });
+    }
+    return res.status(440).send({ error: "Session expired!" });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
-const resetPassword = async () => {
+//update the password when we have valid session
+const resetPassword = async (req, res, next) => {
   try {
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 module.exports = {
