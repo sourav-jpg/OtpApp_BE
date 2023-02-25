@@ -1,6 +1,20 @@
 const User = require("../model/UserSchema");
 const md5 = require("md5");
 const jwt = require("jsonwebtoken");
+ 
+
+const verify = async(req,res,next) =>{
+  try {
+    const {username} = req.method == "GET" ? req.query : req.body;
+    //check the user existance
+    let exist = await User.findOne({username});
+    if(!exist) return res.status(404).send({error:"Can't find User!"})
+    next();
+    
+  } catch (error) {
+    res.status(404).send({error:"Authentication error"})
+  }
+}
 
 const register = async (req, res, next) => {
   let { email, username, password } = req.body;
@@ -133,6 +147,7 @@ const resetPassword = async () => {
 };
 
 module.exports = {
+  verify,
   register,
   login,
   getUser,

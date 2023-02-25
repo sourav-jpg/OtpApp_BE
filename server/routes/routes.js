@@ -4,7 +4,7 @@ const controller = require("../controller/appController");
 const auth  = require("../middleware/auth");
 
 // POST Methods
-route.post("/login", controller.login); //login in app
+route.post("/login",controller.verify, controller.login); //login in app
 route.post("/register", controller.register); //register user
 // route.post('/registerMail',controller.register);//send the email
 // route.post('/authenticate',controller.register);//authenticate the user
