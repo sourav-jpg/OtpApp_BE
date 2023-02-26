@@ -19,6 +19,6 @@ route.get("/createResetSession", controller.createResetSession); //reset all var
 
 //PUT Methods
 route.put("/updateuser",auth,controller.updateUser); // is used to update the user profile
-route.put("/resetPassword", controller.resetPassword); // used to reset password
+route.put("/resetPassword",controller.verify, controller.resetPassword); // used to reset password
 
 module.exports = route;

@@ -174,6 +174,26 @@ const createResetSession = async (req, res, next) => {
 //update the password when we have valid session
 const resetPassword = async (req, res, next) => {
   try {
+    if (!req.app.locals.resetSession) return res.status(440).send({ error: "Session expired!" });
+    let { username, password } = req.body;
+    let hashedPassword = md5(password);
+    let result;
+    result = await User.findOne({ username: username });
+    if (result) {
+      await User.updateOne(
+        { username: username },
+        { password: hashedPassword }
+      );
+      res.status(201).json({
+        message: "Password updated...!",
+        error: false,
+      });
+    } else {
+      res.status(500).json({
+        message: "Username not found!",
+        error: false,
+      });
+    }
   } catch (error) {
     console.log(error);
     next(error);
